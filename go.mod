@@ -1,4 +1,4 @@
-module github.com/junland/sled
+module github.com/junland/conveyor
 
 go 1.13
 

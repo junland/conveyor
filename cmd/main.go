@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	flag "github.com/spf13/pflag"
-	"github.com/junland/sled/server"
+	"github.com/junland/conveyor/server"
 )
 
 // BinVersion describes built binary version.
@@ -18,7 +18,7 @@ const (
 	defLvl    = "info"
 	defAccess = true
 	defPort   = "8080"
-	defPID    = "/var/run/sled.pid"
+	defPID    = "/var/run/conveyor.pid"
 	defTLS    = false
 	defCert   = ""
 	defKey    = ""
@@ -32,13 +32,13 @@ var (
 // init defines configuration flags and environment variables.
 func init() {
 	flags := flag.CommandLine
-	flags.StringVar(&confLogLvl, "log-level", GetEnvString("SLED_LOG_LEVEL", defLvl), "Specify log level for output.")
-	flags.BoolVar(&enableAccess, "access-log", GetEnvBool("SLED_ACCESS_LOG", defAccess), "Specify weather to run with or without HTTP access logs.")
-	flags.StringVar(&confPort, "port", GetEnvString("SLED_SERVER_PORT", defPort), "Starting server port.")
-	flags.StringVar(&confPID, "pid-file", GetEnvString("SLED_SERVER_PID", defPID), "Specify server PID file path.")
-	flags.BoolVar(&enableTLS, "tls", GetEnvBool("SLED_TLS", defTLS), "Specify weather to run server in secure mode.")
-	flags.StringVar(&confCert, "tls-cert", GetEnvString("SLED_TLS_CERT", defCert), "Specify TLS certificate file path.")
-	flags.StringVar(&confKey, "tls-key", GetEnvString("SLED_TLS_KEY", defKey), "Specify TLS key file path.")
+	flags.StringVar(&confLogLvl, "log-level", GetEnvString("CONVEYOR_LOG_LEVEL", defLvl), "Specify log level for output.")
+	flags.BoolVar(&enableAccess, "access-log", GetEnvBool("CONVEYOR_ACCESS_LOG", defAccess), "Specify weather to run with or without HTTP access logs.")
+	flags.StringVar(&confPort, "port", GetEnvString("CONVEYOR_SERVER_PORT", defPort), "Starting server port.")
+	flags.StringVar(&confPID, "pid-file", GetEnvString("CONVEYOR_SERVER_PID", defPID), "Specify server PID file path.")
+	flags.BoolVar(&enableTLS, "tls", GetEnvBool("CONVEYOR_TLS", defTLS), "Specify weather to run server in secure mode.")
+	flags.StringVar(&confCert, "tls-cert", GetEnvString("CONVEYOR_TLS_CERT", defCert), "Specify TLS certificate file path.")
+	flags.StringVar(&confKey, "tls-key", GetEnvString("CONVEYOR_TLS_KEY", defKey), "Specify TLS key file path.")
 	flags.BoolVarP(&help, "help", "h", false, "Show this help")
 	flags.BoolVar(&version, "version", false, "Display version information")
 	flags.SortFlags = false
@@ -47,7 +47,7 @@ func init() {
 
 // PrintHelp prints help text.
 func PrintHelp() {
-	fmt.Printf("Usage: sled [options] <command> [<args>]\n")
+	fmt.Printf("Usage: conveyor [options] <command> [<args>]\n")
 	fmt.Printf("\n")
 	fmt.Printf("A simple web app template.\n")
 	fmt.Printf("\n")

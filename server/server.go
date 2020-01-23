@@ -37,7 +37,7 @@ func Start(c Config) error {
 
 	if c.TLS == true {
 		if c.Cert == "" || c.Key == "" {
-			log.Fatal("Invalid TLS configuration, please pass a file path for both SLED_KEY and SLED_CERT")
+			log.Fatal("Invalid TLS configuration, please pass a file path for both CONVEYOR_KEY and CONVEYOR_CERT")
 		}
 	}
 
