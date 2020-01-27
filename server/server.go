@@ -13,19 +13,25 @@ import (
 
 // Config struct provides configuration fields for the server.
 type Config struct {
-	LogLvl string
-	Access bool
-	Port   string
-	PID    string
-	TLS    bool
-	Cert   string
-	Key    string
+	LogLvl       string
+	Access       bool
+	Port         string
+	PID          string
+	TLS          bool
+	Cert         string
+	Key          string
+	WorkspaceDir string
+	Workers      int
 }
 
 var stop = make(chan os.Signal)
 
+// WorkQueue is a buffered channel that we can send work requests on.
+var WorkQueue = make(chan WorkRequest, 500)
+
 // Start sets up and starts the main server application
 func Start(c Config) error {
+
 	// Get log level environment variable.
 	envLvl, err := log.ParseLevel(c.LogLvl)
 	if err != nil {
@@ -43,11 +49,20 @@ func Start(c Config) error {
 
 	log.Info("Setting up server...")
 
+	if _, err := os.Stat(c.WorkspaceDir); os.IsNotExist(err) {
+		log.Info("Workspace directory does not exist. Creating...")
+		os.Mkdir(c.WorkspaceDir, 0777)
+	}
+
 	router := RegisterRoutes()
 
 	log.Debug("Setting up logging...")
 
 	srv := &http.Server{Addr: ":" + c.Port, Handler: AccessLogger(router, c.Access)}
+
+	log.Info("Starting dispatcher...")
+
+	StartDispatcher(c.Workers)
 
 	log.Debug("Starting server on port ", c.Port)
 

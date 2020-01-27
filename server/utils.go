@@ -23,12 +23,12 @@ func CreatePID(name string) *Pidfile {
 		// file exists
 		value, err := ioutil.ReadFile(name)
 		if err != nil {
-			log.Fatalf("pidfile: failed to read pid ", err)
+			log.Fatal("pidfile: failed to read pid ", err)
 		}
 
 		pid, err := strconv.Atoi(string(value))
 		if err != nil {
-			log.Fatalf("pidfile: failed to convert string to int ", err)
+			log.Fatal("pidfile: failed to convert string to int ", err)
 		}
 
 		process, err := os.FindProcess(pid)

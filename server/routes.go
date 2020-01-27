@@ -24,5 +24,7 @@ func RegisterRoutes() *httprouter.Router {
 	router.Handler("GET", "/hello", chain.ThenFunc(helloGlobalHandle))
 	router.Handler("GET", "/hello/:name", chain.ThenFunc(helloNameHandle))
 
+	router.Handler("POST", "/work", chain.ThenFunc(Collector))
+
 	return router
 }
