@@ -51,16 +51,28 @@ func Start(c Config) error {
 	w := 1
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
-        if _, err := os.Stat(c.WorkspaceDir + ws); os.IsNotExist(err) {
+        if _, err := os.Stat(c.WorkspaceDir + "_" + ws); os.IsNotExist(err) {
 			log.Info("Workspace directory does not exist. Creating...")
 			os.Mkdir(c.WorkspaceDir, 0777)
+			log.Debug("Created " + c.WorkspaceDir + "_" + ws)
+		}
+        w = w + 1
+	}
+	
+	w := 1
+	for w <= c.Workers {
+		ws := strconv.Itoa(w)
+        if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
+			log.Info("Worker directory does not exist. Creating...")
+			os.Mkdir(c.WorkersDir, 0777)
+			log.Debug("Created " + c.WorkersDir + "_" + ws)
 		}
         w = w + 1
     }
 
 	router := c.RegisterRoutes()
 
-	log.Debug("Setting up logging...")
+	log.Debug("Setting up http logging...")
 
 	srv := &http.Server{Addr: ":" + c.Port, Handler: AccessLogger(router, c.Access)}
 

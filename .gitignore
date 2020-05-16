@@ -21,6 +21,11 @@
 # Exclude binary
 conveyor
 
+# Exclude workspace dirs.
+workspace_*/
+workspace
+workspace_*
+
 # Exclude PID files
 *.pid
 

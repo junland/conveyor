@@ -23,7 +23,7 @@ const (
 	defCert         = ""
 	defKey          = ""
 	defWorkers      = 2
-	defWorkersDir   = "/tmp"
+	defWorkersDir   = "/tmp/worker"
 	defWorkspaceDir = "./workspace"
 )
 
