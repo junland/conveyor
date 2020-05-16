@@ -19,7 +19,7 @@
 *.crt
 
 # Exclude binary
-./conveyor
+conveyor
 
 # Exclude PID files
 *.pid
