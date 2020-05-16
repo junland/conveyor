@@ -49,8 +49,25 @@ func Start(c Config) error {
 	log.Info("Setting up server...")
 
 	var w int
+
+	w = 0
+	for w <= c.Workers {
+		ws := strconv.Itoa(w)
+        if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
+			log.Info("Worker directory does not exist. Creating...")
+			os.Mkdir(c.WorkersDir + "_" + ws, 0777)
+			log.Debug("Created " + c.WorkersDir + "_" + ws)
+		}
+
+		if _, err := os.Stat(c.WorkersDir + "_" + ws + "/job-scripts.d"); os.IsNotExist(err) {
+			log.Info("Worker directory does not exist. Creating...")
+			os.Mkdir(c.WorkersDir + "_" + ws + "/job-scripts.d", 0777)
+			log.Debug("Created " + c.WorkersDir + "_" + ws + "/job-scripts.d")
+		}
+        w = w + 1
+    }
 	
-	w = 1
+	w = 0
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
         if _, err := os.Stat(c.WorkspaceDir + "_" + ws); os.IsNotExist(err) {
@@ -60,17 +77,6 @@ func Start(c Config) error {
 		}
         w = w + 1
 	}
-	
-	w = 1
-	for w <= c.Workers {
-		ws := strconv.Itoa(w)
-        if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
-			log.Info("Worker directory does not exist. Creating...")
-			os.Mkdir(c.WorkersDir + "_" + ws, 0777)
-			log.Debug("Created " + c.WorkersDir + "_" + ws)
-		}
-        w = w + 1
-    }
 
 	router := c.RegisterRoutes()
 

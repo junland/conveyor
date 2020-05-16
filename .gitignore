@@ -26,6 +26,9 @@ workspace_*/
 workspace
 workspace_*
 
+# Exclude timestamp files.
+,*
+
 # Exclude PID files
 *.pid
 
