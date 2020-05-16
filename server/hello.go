@@ -71,7 +71,6 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 	log.Info("Queueing up job for worker " + exws)
 
 	err := execq.Start()
-
 	if err != nil {
 		log.Error("Something went wrong with running nq: %s", err)
 	}
