@@ -3,19 +3,22 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"json"
+	"ioutil"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-// WorkRequest describes the statement of work.
-type WorkRequest struct {
-	Name  string
-	Delay time.Duration
+// JobRequest describes the statement of work.
+type JobRequest []struct {
+	Name     string   `json:"name"`
+	Commands []string `json:"commands"`
 }
 
 // Collector is a fucntion that collects and parses incoming jobs.
-func Collector(w http.ResponseWriter, r *http.Request) {
+func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
+	var newJobRequest JobRequest
 
 	// Make sure we can only be called with an HTTP POST request.
 	if r.Method != "POST" {
@@ -23,19 +26,13 @@ func Collector(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
-	// Parse the delay.
-	delay, err := time.ParseDuration(r.FormValue("delay"))
+    
+    reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Bad delay value: "+err.Error(), http.StatusBadRequest)
-		return
+		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
 	}
 
-	// Check to make sure the delay is anywhere from 1 to 10 seconds.
-	if delay.Seconds() < 1 || delay.Seconds() > 10 {
-		http.Error(w, "The delay must be between 1 and 10 seconds, inclusively.", http.StatusBadRequest)
-		return
-	}
+	json.Unmarshal(reqBody, &newEvent)
 
 	// Now, we retrieve the person's name from the request.
 	name := r.FormValue("name")
@@ -45,12 +42,6 @@ func Collector(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "You must specify a name.", http.StatusBadRequest)
 		return
 	}
-
-	// Now, we take the delay, and the person's name, and make a WorkRequest out of them.
-	work := WorkRequest{Name: name, Delay: delay}
-
-	// Push the work onto the queue.
-	WorkQueue <- work
 
 	fmt.Println("Work request queued")
 

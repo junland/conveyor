@@ -26,9 +26,6 @@ type Config struct {
 
 var stop = make(chan os.Signal)
 
-// WorkQueue is a buffered channel that we can send work requests on.
-var WorkQueue = make(chan WorkRequest, 500)
-
 // Start sets up and starts the main server application
 func Start(c Config) error {
 
@@ -54,15 +51,11 @@ func Start(c Config) error {
 		os.Mkdir(c.WorkspaceDir, 0777)
 	}
 
-	router := RegisterRoutes()
+	router := c.RegisterRoutes()
 
 	log.Debug("Setting up logging...")
 
 	srv := &http.Server{Addr: ":" + c.Port, Handler: AccessLogger(router, c.Access)}
-
-	log.Info("Starting dispatcher...")
-
-	StartDispatcher(c.Workers)
 
 	log.Debug("Starting server on port ", c.Port)
 
@@ -79,13 +72,11 @@ func Start(c Config) error {
 		}
 	}()
 
-	log.Info("Serving on port " + c.Port + ", press CTRL + C to shutdown.")
-
 	p := CreatePID(c.PID)
 
 	signal.Notify(stop, os.Interrupt)
 
-	log.Warn("After notify...")
+	log.Info("Serving on port " + c.Port + ", press CTRL + C to shutdown.")
 
 	<-stop // wait for SIGINT
 
