@@ -48,7 +48,7 @@ func Start(c Config) error {
 
 	log.Info("Setting up server...")
 	
-	w := 1
+	w = 1
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
         if _, err := os.Stat(c.WorkspaceDir + "_" + ws); os.IsNotExist(err) {
@@ -59,7 +59,7 @@ func Start(c Config) error {
         w = w + 1
 	}
 	
-	w := 1
+	w = 1
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
         if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
