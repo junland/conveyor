@@ -7,6 +7,9 @@ import (
 	"encoding/json"
 	"os"
 	"os/exec"
+	"math/rand"
+	"time"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -43,6 +46,8 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var excmd string
+	var expwd string
+	var exnqdir string
 
 	for _, cmd := range newJob.commands {
         excmd += str + ";"
