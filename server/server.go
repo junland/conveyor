@@ -47,6 +47,8 @@ func Start(c Config) error {
 	}
 
 	log.Info("Setting up server...")
+
+	var w int
 	
 	w = 1
 	for w <= c.Workers {
