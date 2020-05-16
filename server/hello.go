@@ -56,11 +56,15 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	exws = strconv.Itoa(rand.Intn(c.Workers))
+	var exws string
+	var expwd string
+	var exnqdir string
 
-	expwd = "PWD=" + c.WorkspaceDir + "_" + esws
+	exws := strconv.Itoa(rand.Intn(c.Workers))
 
-	exnqdir = "NQDIR=" + c.WorkersDir + "_" + esws
+	expwd := "PWD=" + c.WorkspaceDir + "_" + esws
+
+	exnqdir := "NQDIR=" + c.WorkersDir + "_" + esws
 
 	execq := exec.Command("nq", excmd)
 
@@ -71,7 +75,7 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 	err := execq.Start()
 
 	if err != nil {
-		log.Error("Something went wrong with running nq: " + err)
+		log.Error("Something went wrong with running nq: %s", err)
 	}
 
 	// And let the user know their work request was created.
