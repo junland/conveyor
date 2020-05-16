@@ -23,6 +23,7 @@ type Config struct {
 	Key          string
 	WorkspaceDir string
 	Workers      int
+	WorkersDir   string
 }
 
 var stop = make(chan os.Signal)
