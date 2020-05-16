@@ -7,7 +7,7 @@ import (
 )
 
 // RegisterRoutes sets all the configured routes for the server to the designated handler and middleware.
-func RegisterRoutes() *httprouter.Router {
+func (config *Config) RegisterRoutes() *httprouter.Router {
 	log.Debug("Setting route info...")
 
 	// Set the router.
@@ -24,7 +24,7 @@ func RegisterRoutes() *httprouter.Router {
 	router.Handler("GET", "/hello", chain.ThenFunc(helloGlobalHandle))
 	router.Handler("GET", "/hello/:name", chain.ThenFunc(helloNameHandle))
 
-	router.Handler("POST", "/work", chain.ThenFunc(Collector))
+	router.Handler("POST", "/job", chain.ThenFunc(config.Collector))
 
 	return router
 }
