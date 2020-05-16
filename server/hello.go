@@ -60,15 +60,15 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 
 	exws = strconv.Itoa(rand.Intn(c.Workers))
 
-	expwd = fmt.Sprintf("PWD=%s_%s", c.WorkspaceDir, esws)
+	expwd = fmt.Sprintf("PWD=%s_%s", c.WorkspaceDir, exws)
 
-	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, esws)
+	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
 
 	execq := exec.Command("nq", excmd)
 
 	execq.Env = append(os.Environ(),expwd,exnqdir,)
 
-	log.Info("Queueing up job for worker " + esws)
+	log.Info("Queueing up job for worker " + exws)
 
 	err := execq.Start()
 
