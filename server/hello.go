@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"json"
 	"io/ioutil"
 	"encoding/json"
 	"time"
