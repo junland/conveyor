@@ -41,14 +41,14 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(reqBody, &newJob)
 
 	// Just do a quick bit of sanity checking to make sure the client actually provided us with a name.
-	if newJob.name == "" {
+	if newJob.Name == "" {
 		http.Error(w, "You must specify a name for this job.", http.StatusBadRequest)
 		return
 	}
 
 	var excmd string
 
-	for _, cmd := range newJob.commands {
+	for _, cmd := range newJob.Commands {
         excmd += cmd + ";"
 	}
 	
