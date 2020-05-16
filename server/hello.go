@@ -56,15 +56,13 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	var exws string
-	var expwd string
-	var exnqdir string
+	var exws, expwd, exnqdir string
 
 	exws := strconv.Itoa(rand.Intn(c.Workers))
 
-	expwd := "PWD=" + c.WorkspaceDir + "_" + esws
+	expwd := fmt.Sprintf("PWD=%s_%s", c.WorkspaceDir, esws)
 
-	exnqdir := "NQDIR=" + c.WorkersDir + "_" + esws
+	exnqdir := fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, esws)
 
 	execq := exec.Command("nq", excmd)
 
