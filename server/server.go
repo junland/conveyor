@@ -55,7 +55,7 @@ func Start(c Config) error {
 		ws := strconv.Itoa(w)
         if _, err := os.Stat(c.WorkspaceDir + "_" + ws); os.IsNotExist(err) {
 			log.Info("Workspace directory does not exist. Creating...")
-			os.Mkdir(c.WorkspaceDir, 0777)
+			os.Mkdir(c.WorkspaceDir + "_" + ws, 0777)
 			log.Debug("Created " + c.WorkspaceDir + "_" + ws)
 		}
         w = w + 1
@@ -66,7 +66,7 @@ func Start(c Config) error {
 		ws := strconv.Itoa(w)
         if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
 			log.Info("Worker directory does not exist. Creating...")
-			os.Mkdir(c.WorkersDir, 0777)
+			os.Mkdir(c.WorkersDir + "_" + ws, 0777)
 			log.Debug("Created " + c.WorkersDir + "_" + ws)
 		}
         w = w + 1
