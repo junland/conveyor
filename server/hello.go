@@ -47,22 +47,20 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var excmd string
-	var expwd string
-	var exnqdir string
 
 	for _, cmd := range newJob.commands {
-        excmd += str + ";"
+        excmd += cmd + ";"
 	}
 	
 	log.Debug("Created command structure...")
 
 	rand.Seed(time.Now().UnixNano())
 
-	exws := strconv.Itoa(rand.Intn(c.Workers))
+	exws = strconv.Itoa(rand.Intn(c.Workers))
 
-	expwd := "PWD=" + c.WorkspaceDir + "_" + esws
+	expwd = "PWD=" + c.WorkspaceDir + "_" + esws
 
-	exnqdir := "NQDIR=" + c.WorkersDir + "_" + esws
+	exnqdir = "NQDIR=" + c.WorkersDir + "_" + esws
 
 	execq := exec.Command("nq", excmd)
 
