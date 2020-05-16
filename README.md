@@ -22,3 +22,9 @@ POST /job/<job_id> -- Restart / reinsert job into queue.
 ```
 GET /job/<job_id>/log -- Get log file of job.
 ```
+
+## Testing
+
+```
+curl -H "Content-Type: application/json" -d '{"name":"frontend","commands":["echo 1","echo 2","touch file_$RANDOM"]}' http://localhost:8080/job
+```

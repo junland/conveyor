@@ -24,7 +24,7 @@ const (
 	defKey          = ""
 	defWorkers      = 2
 	defWorkersDir   = "/tmp/worker"
-	defWorkspaceDir = "./workspace"
+	defWorkspaceDir = "/tmp/workspace"
 )
 
 var (
