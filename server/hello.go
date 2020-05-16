@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -32,7 +31,7 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
 	}
 
-	json.Unmarshal(reqBody, &newEvent)
+	json.Unmarshal(reqBody, &newJobRequest)
 
 	// Now, we retrieve the person's name from the request.
 	name := r.FormValue("name")
