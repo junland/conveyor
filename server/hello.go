@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	log "github.com/sirupsen/logrus"
 )
 
 // JobRequest describes the statement of work.
