@@ -45,11 +45,16 @@ func Start(c Config) error {
 	}
 
 	log.Info("Setting up server...")
-
-	if _, err := os.Stat(c.WorkspaceDir); os.IsNotExist(err) {
-		log.Info("Workspace directory does not exist. Creating...")
-		os.Mkdir(c.WorkspaceDir, 0777)
-	}
+	
+	w := 1
+	for w <= c.Workers {
+		ws := strconv.Itoa(w)
+        if _, err := os.Stat(c.WorkspaceDir + ws); os.IsNotExist(err) {
+			log.Info("Workspace directory does not exist. Creating...")
+			os.Mkdir(c.WorkspaceDir, 0777)
+		}
+        w = w + 1
+    }
 
 	router := c.RegisterRoutes()
 

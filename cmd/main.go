@@ -22,12 +22,13 @@ const (
 	defTLS          = false
 	defCert         = ""
 	defKey          = ""
-	defWorkers      = 1
+	defWorkers      = 2
+	defWorkersDir   = "/tmp"
 	defWorkspaceDir = "./workspace"
 )
 
 var (
-	confLogLvl, confPort, confPID, confCert, confKey, confWorkspaceDir string
+	confLogLvl, confPort, confPID, confCert, confKey, confWorkersDir, confWorkspaceDir string
 	enableTLS, enableAccess, version, help                             bool
 	confWorkers                                                        int
 )
@@ -44,6 +45,7 @@ func init() {
 	flags.StringVar(&confKey, "tls-key", GetEnvString("CONVEYOR_TLS_KEY", defKey), "Specify TLS key file path.")
 	flags.StringVar(&confWorkspaceDir, "workspace-dir", GetEnvString("CONVEYOR_WORKSPACE_DIR", defWorkspaceDir), "Specify the working directory for builds.")
 	flags.IntVar(&confWorkers, "workers", GetEnvInt("CONVEYOR_WORKERS", defWorkers), "Specify amount of executors to process requests.")
+	flags.StringVar(&confWorkersDir, "workers-dir", GetEnvString("CONVEYOR_WORKERS_DIR", defWorkersDir), "Specify the working directory for builds.")
 	flags.BoolVarP(&help, "help", "h", false, "Show this help")
 	flags.BoolVar(&version, "version", false, "Display version information")
 	flags.SortFlags = false
@@ -81,6 +83,7 @@ func Run() {
 		Key:          confKey,
 		WorkspaceDir: confWorkspaceDir,
 		Workers:      confWorkers,
+		WorkersDir:   confWorkersDir,
 	}
 
 	if version {
