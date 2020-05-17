@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 	"strconv"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -53,29 +53,29 @@ func Start(c Config) error {
 	w = 0
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
-        if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
+		if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
 			log.Info("Worker directory does not exist. Creating...")
-			os.Mkdir(c.WorkersDir + "_" + ws, 0777)
+			os.Mkdir(c.WorkersDir+"_"+ws, 0777)
 			log.Debug("Created " + c.WorkersDir + "_" + ws)
 		}
 
 		if _, err := os.Stat(c.WorkersDir + "_" + ws + "/job-scripts.d"); os.IsNotExist(err) {
 			log.Info("Worker directory does not exist. Creating...")
-			os.Mkdir(c.WorkersDir + "_" + ws + "/job-scripts.d", 0777)
+			os.Mkdir(c.WorkersDir+"_"+ws+"/job-scripts.d", 0777)
 			log.Debug("Created " + c.WorkersDir + "_" + ws + "/job-scripts.d")
 		}
-        w = w + 1
-    }
-	
+		w = w + 1
+	}
+
 	w = 0
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
-        if _, err := os.Stat(c.WorkspaceDir + "_" + ws); os.IsNotExist(err) {
+		if _, err := os.Stat(c.WorkspaceDir + "_" + ws); os.IsNotExist(err) {
 			log.Info("Workspace directory does not exist. Creating...")
-			os.Mkdir(c.WorkspaceDir + "_" + ws, 0777)
+			os.Mkdir(c.WorkspaceDir+"_"+ws, 0777)
 			log.Debug("Created " + c.WorkspaceDir + "_" + ws)
 		}
-        w = w + 1
+		w = w + 1
 	}
 
 	router := c.RegisterRoutes()

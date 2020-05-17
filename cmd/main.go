@@ -29,8 +29,8 @@ const (
 
 var (
 	confLogLvl, confPort, confPID, confCert, confKey, confWorkersDir, confWorkspaceDir string
-	enableTLS, enableAccess, version, help                             bool
-	confWorkers                                                        int
+	enableTLS, enableAccess, version, help                                             bool
+	confWorkers                                                                        int
 )
 
 // init defines configuration flags and environment variables.

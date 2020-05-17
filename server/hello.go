@@ -1,15 +1,15 @@
 package server
 
 import (
-	"fmt"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
 	"os"
 	"os/exec"
-	"math/rand"
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
@@ -30,8 +30,8 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-    
-    reqBody, err := ioutil.ReadAll(r.Body)
+
+	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error("Something went wrong with parsing the json request: %s", err)
 		respondJSON(w, http.StatusBadRequest, "Could not parse json.")
@@ -48,12 +48,12 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    var exws, expwd, exnqdir, excmd string
+	var exws, expwd, exnqdir, excmd string
 
 	for _, cmd := range newJob.Commands {
-        excmd += cmd + ";"
+		excmd += cmd + ";"
 	}
-	
+
 	log.Debug("Created command structure...")
 
 	exectime := time.Now().UnixNano() / 1e6
@@ -66,9 +66,9 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
 
-	execq := exec.Command("nqe", "-p " + strconv.FormatInt(exectime, 10), "-- ", excmd)
+	execq := exec.Command("nqe", "-p "+strconv.FormatInt(exectime, 10), "-- ", excmd)
 
-	execq.Env = append(os.Environ(),expwd,exnqdir,)
+	execq.Env = append(os.Environ(), expwd, exnqdir)
 
 	log.Info("Queueing up job for worker " + exws)
 

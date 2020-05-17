@@ -1,13 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 	"syscall"
-	"net/http"
-	"encoding/json"
 
 	log "github.com/sirupsen/logrus"
 )
