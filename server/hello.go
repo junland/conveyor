@@ -66,7 +66,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
 
-	execq := exec.Command("nqe", "-p " + strconv.Itoa(exectime), "-- ", excmd)
+	execq := exec.Command("nqe", "-p " + strconv.FormatUint(exectime, 10), "-- ", excmd)
 
 	execq.Env = append(os.Environ(),expwd,exnqdir,)
 
