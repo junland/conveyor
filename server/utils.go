@@ -78,6 +78,63 @@ func (pf *Pidfile) RemovePID() {
 	log.Debug("PID file removed...")
 }
 
+func WriteScript(f string, i string) error {
+	_, err := os.Stat(f)
+
+	script, err := os.OpenFile(f, os.O_RDWR, 0744)
+	if err != nil {
+		return err
+	}
+	defer script.Close()
+
+	_, err = script.WriteString(i)
+	if err != nil {
+		return err
+	}
+
+	log.Debug("Script wrote: " + i)
+
+	return nil
+}
+
+func CreateScript(f string) error {
+	_, err := os.Stat(f)
+	if err != nil {
+		return err
+	}
+
+	// create file if not exists
+	if os.IsNotExist(err) {
+		var script, err = os.Create(f)
+		if err != nil {
+			return err
+		}
+		defer script.Close()
+	}
+
+	script, err := os.OpenFile(f, os.O_RDWR, 0744)
+	if err != nil {
+		return err
+	}
+	defer script.Close()
+
+	// Write some text line-by-line to file.
+	_, err = script.WriteString("#!/bin/bash \nset -x\n")
+	if err != nil {
+		return err
+	}
+
+	// Save file changes.
+	err = script.Sync()
+	if err != nil {
+		return err
+	}
+
+	log.Debug("script file created...")
+
+	return nil
+}
+
 // respondJSON makes the response with payload as json format
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	response, err := json.Marshal(payload)

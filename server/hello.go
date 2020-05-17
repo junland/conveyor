@@ -34,7 +34,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error("Something went wrong with parsing the json request: %s", err)
-		respondJSON(w, http.StatusBadRequest, "Could not parse json.")
+		respondError(w, http.StatusBadRequest, "Could not parse json.")
 		return
 	}
 
@@ -44,21 +44,17 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	// Just do a quick bit of sanity checking to make sure the client actually provided us with a name.
 	if newJob.Name == "" {
-		respondJSON(w, http.StatusBadRequest, "No job name specified.")
+		respondError(w, http.StatusBadRequest, "No job name specified.")
 		return
 	}
 
-	var exws, expwd, exnqdir, excmd string
-
-	for _, cmd := range newJob.Commands {
-		excmd += cmd + ";"
-	}
-
-	log.Debug("Created command structure...")
+	var exws, expwd, exnqdir, exscript, extime string
 
 	exectime := time.Now().UnixNano() / 1e6
 
 	rand.Seed(exectime)
+
+	extime = strconv.FormatInt(exectime, 10)
 
 	exws = strconv.Itoa(rand.Intn(c.Workers))
 
@@ -66,7 +62,20 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
 
-	execq := exec.Command("nqe", "-p "+strconv.FormatInt(exectime, 10), "-- ", excmd)
+	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d/" + extime + ".qscript"
+
+	err = CreateScript(exscript)
+	if err != nil {
+		log.Error("Could not create script file: %s", err)
+		respondError(w, http.StatusInternalServerError, "Could not submit job.")
+		return
+	}
+
+	for _, cmd := range newJob.Commands {
+		WriteScript(exscript, cmd)
+	}
+
+	execq := exec.Command("nqe", "-p "+extime+" "+exscript)
 
 	execq.Env = append(os.Environ(), expwd, exnqdir)
 
@@ -75,7 +84,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 	err = execq.Start()
 	if err != nil {
 		log.Error("Something went wrong with running nq: %s", err)
-		respondJSON(w, http.StatusInternalServerError, "Could not parse json.")
+		respondError(w, http.StatusInternalServerError, "Something went wrong with queue worker.")
 		return
 	}
 
