@@ -39,4 +39,4 @@ test:
 .PHONY: clean
 binary: clean
 	@echo "Building binary for commit $(GIT_COMMIT)"
-	go build ./...
+	go build 
