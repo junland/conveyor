@@ -21,8 +21,8 @@ type JobRequest struct {
 	Commands []string `json:"commands"`
 }
 
-// Collector is a fucntion that collects and parses incoming jobs.
-func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
+// CreateJob is a function that collects and parses incoming jobs.
+func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	// Make sure we can only be called with an HTTP POST request.
 	if r.Method != "POST" {
@@ -33,7 +33,8 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
     
     reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
+		log.Error("Something went wrong with parsing the json request: %s", err)
+		return respondwithJSON(w, http.StatusBadRequest, "Could not parse json."}
 	}
 
 	var newJob JobRequest
@@ -42,11 +43,10 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 
 	// Just do a quick bit of sanity checking to make sure the client actually provided us with a name.
 	if newJob.Name == "" {
-		http.Error(w, "You must specify a name for this job.", http.StatusBadRequest)
-		return
+		return respondwithJSON(w, http.StatusBadRequest, "No job name specified."}
 	}
 
-	var excmd string
+    var exws, expwd, exnqdir, excmd string
 
 	for _, cmd := range newJob.Commands {
         excmd += cmd + ";"
@@ -54,9 +54,9 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 	
 	log.Debug("Created command structure...")
 
-	rand.Seed(time.Now().UnixNano())
+	exectime := time.Now().UnixNano() / 1e6
 
-	var exws, expwd, exnqdir string
+	rand.Seed(exectime)
 
 	exws = strconv.Itoa(rand.Intn(c.Workers))
 
@@ -64,7 +64,7 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 
 	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
 
-	execq := exec.Command("nq", excmd)
+	execq := exec.Command("nqe", "-p " + exectime, "-- ", excmd)
 
 	execq.Env = append(os.Environ(),expwd,exnqdir,)
 
@@ -73,12 +73,10 @@ func (c *Config) Collector(w http.ResponseWriter, r *http.Request) {
 	err = execq.Start()
 	if err != nil {
 		log.Error("Something went wrong with running nq: %s", err)
+		return respondwithJSON(w, http.StatusInternalServerError, "Could not parse json."}
 	}
 
-	// And let the user know their work request was created.
-	w.WriteHeader(http.StatusCreated)
-
-	return
+	return respondwithJSON(w, http.StatusOK, map[string]string{"message": "Job Submitted"}
 }
 
 // helloRootHandle is a handle.
