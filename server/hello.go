@@ -34,7 +34,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
     reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error("Something went wrong with parsing the json request: %s", err)
-		return respondwithJSON(w, http.StatusBadRequest, "Could not parse json.")
+		return respondJSON(w, http.StatusBadRequest, "Could not parse json.")
 	}
 
 	var newJob JobRequest
@@ -43,7 +43,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	// Just do a quick bit of sanity checking to make sure the client actually provided us with a name.
 	if newJob.Name == "" {
-		return respondwithJSON(w, http.StatusBadRequest, "No job name specified.")
+		return respondJSON(w, http.StatusBadRequest, "No job name specified.")
 	}
 
     var exws, expwd, exnqdir, excmd string
@@ -73,10 +73,10 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 	err = execq.Start()
 	if err != nil {
 		log.Error("Something went wrong with running nq: %s", err)
-		return respondwithJSON(w, http.StatusInternalServerError, "Could not parse json.")
+		return respondJSON(w, http.StatusInternalServerError, "Could not parse json.")
 	}
 
-	return respondwithJSON(w, http.StatusOK, map[string]string{"message": "Job Submitted"})
+	return respondwithrespondJSONJSON(w, http.StatusOK, map[string]string{"message": "Job Submitted"})
 }
 
 // helloRootHandle is a handle.
