@@ -62,6 +62,8 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
 
+	log.Debug("NQDIR: " + exnqdir)
+
 	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d/" + extime + ".qscript"
 
 	err = CreateScript(exscript)
@@ -72,10 +74,10 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, cmd := range newJob.Commands {
-		WriteScript(exscript, cmd)
+		WriteScript(exscript, cmd+"\n")
 	}
 
-	execq := exec.Command("nqe", "-p "+extime+" "+exscript)
+	execq := exec.Command("nqe", "-p", extime, exscript)
 
 	execq.Env = append(os.Environ(), expwd, exnqdir)
 

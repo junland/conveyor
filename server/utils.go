@@ -80,8 +80,11 @@ func (pf *Pidfile) RemovePID() {
 
 func WriteScript(f string, i string) error {
 	_, err := os.Stat(f)
+	if err != nil {
+		return err
+	}
 
-	script, err := os.OpenFile(f, os.O_RDWR, 0744)
+	script, err := os.OpenFile(f, os.O_WRONLY|os.O_APPEND, 0770)
 	if err != nil {
 		return err
 	}
@@ -99,9 +102,6 @@ func WriteScript(f string, i string) error {
 
 func CreateScript(f string) error {
 	_, err := os.Stat(f)
-	if err != nil {
-		return err
-	}
 
 	// create file if not exists
 	if os.IsNotExist(err) {
@@ -112,7 +112,7 @@ func CreateScript(f string) error {
 		defer script.Close()
 	}
 
-	script, err := os.OpenFile(f, os.O_RDWR, 0744)
+	script, err := os.OpenFile(f, os.O_RDWR, 0774)
 	if err != nil {
 		return err
 	}
@@ -126,6 +126,11 @@ func CreateScript(f string) error {
 
 	// Save file changes.
 	err = script.Sync()
+	if err != nil {
+		return err
+	}
+
+	err = os.Chmod(f, 0744)
 	if err != nil {
 		return err
 	}
