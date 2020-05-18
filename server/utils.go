@@ -2,9 +2,9 @@ package server
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
-	"io"
 )
 
 // respondJSON makes the response with payload as json format

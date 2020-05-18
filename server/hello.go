@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/julienschmidt/httprouter"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -10,8 +12,6 @@ import (
 	"os/exec"
 	"strconv"
 	"time"
-	"github.com/julienschmidt/httprouter"
-	log "github.com/sirupsen/logrus"
 )
 
 // JobRequest describes the statement of work.
@@ -47,7 +47,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var exws, expwd, exnqdir, exscript, extime string
+	var exws, exwd, exnqdir, exscript, extime string
 
 	exectime := time.Now().UnixNano() / 1e6
 
@@ -63,19 +63,24 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exws = strconv.Itoa(randws)
 
-	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d" + "/" + extime + ".qscript"
-	
-	qscript := ("#!/bin/bash\nset +x\n")
+	exwd = fmt.Sprintf("cd %s_%s", c.WorkspaceDir, exws)
+
+	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
+
+	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d" + "/" + extime + ".nqescript"
+
+	qscript := "#!/bin/bash\nset +x\n\n" + exwd + "\n\n"
+
 	AppendToFile(exscript, qscript)
 
 	for _, cmd := range newJob.Commands {
 		qscript = cmd
-		AppendToFile(exscript, qscript + "\n")
+		AppendToFile(exscript, qscript+"\n")
 	}
 
 	execq := exec.Command("nqe", "-p", extime, exscript)
 
-	execq.Env = append(os.Environ(), expwd, exnqdir)
+	execq.Env = append(os.Environ(), exnqdir)
 
 	log.Info("Queueing up job for worker " + exws)
 
