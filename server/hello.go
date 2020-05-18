@@ -73,6 +73,11 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = os.Chmod(exscript, 0766)
+	if err != nil {
+		log.Error("Could not chmod script file: %s", err)
+	}
+
 	for _, cmd := range newJob.Commands {
 		WriteScript(exscript, cmd+"\n")
 	}

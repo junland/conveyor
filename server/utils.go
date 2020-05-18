@@ -84,7 +84,7 @@ func WriteScript(f string, i string) error {
 		return err
 	}
 
-	script, err := os.OpenFile(f, os.O_WRONLY|os.O_APPEND, 0770)
+	script, err := os.OpenFile(f, os.O_WRONLY|os.O_APPEND, 0766)
 	if err != nil {
 		return err
 	}
@@ -95,45 +95,39 @@ func WriteScript(f string, i string) error {
 		return err
 	}
 
-	log.Debug("Script wrote: " + i)
-
-	return nil
-}
-
-func CreateScript(f string) error {
-	_, err := os.Stat(f)
-
-	// create file if not exists
-	if os.IsNotExist(err) {
-		var script, err = os.Create(f)
-		if err != nil {
-			return err
-		}
-		defer script.Close()
-	}
-
-	script, err := os.OpenFile(f, os.O_RDWR, 0774)
-	if err != nil {
-		return err
-	}
-	defer script.Close()
-
-	// Write some text line-by-line to file.
-	_, err = script.WriteString("#!/bin/bash \nset -x\n")
-	if err != nil {
-		return err
-	}
-
 	// Save file changes.
 	err = script.Sync()
 	if err != nil {
 		return err
 	}
 
-	err = os.Chmod(f, 0744)
+	err = os.Chmod(f, 0766)
 	if err != nil {
 		return err
 	}
+
+	log.Debug("Script wrote: " + i)
+
+	return nil
+}
+
+func CreateScript(f string) error {
+	var _, err = os.Stat(f)
+
+	file, err := os.OpenFile(f, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	log.Debug("2...")
+
+	err = os.Chmod(f, 0766)
+	if err != nil {
+		return err
+	}
+
+	WriteScript(f, "#!/bin/bash \nset -x\n")
 
 	log.Debug("script file created...")
 

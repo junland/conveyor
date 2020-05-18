@@ -23,8 +23,8 @@ const (
 	defCert         = ""
 	defKey          = ""
 	defWorkers      = 2
-	defWorkersDir   = "/tmp/worker"
-	defWorkspaceDir = "/tmp/workspace"
+	defWorkersDir   = "./worker"
+	defWorkspaceDir = "./workspace"
 )
 
 var (
