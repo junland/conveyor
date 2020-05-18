@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"syscall"
+	"bufio"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -79,29 +80,20 @@ func (pf *Pidfile) RemovePID() {
 }
 
 func WriteScript(f string, i string) error {
-	_, err := os.Stat(f)
-	if err != nil {
-		return err
-	}
 
-	script, err := os.OpenFile(f, os.O_WRONLY|os.O_APPEND, 0766)
+	script, err := os.OpenFile(f, os.O_APPEND, 0766)
 	if err != nil {
 		return err
 	}
+	writer := bufio.NewWriter(script)
 	defer script.Close()
 
-	_, err = script.WriteString(i)
-	if err != nil {
-		return err
-	}
+	fmt.Fprintln(writer, i)
+	
 
-	// Save file changes.
-	err = script.Sync()
-	if err != nil {
-		return err
-	}
+	writer.Flush()
 
-	err = os.Chmod(f, 0766)
+	err = script.Chmod(0777)
 	if err != nil {
 		return err
 	}
@@ -112,20 +104,14 @@ func WriteScript(f string, i string) error {
 }
 
 func CreateScript(f string) error {
-	var _, err = os.Stat(f)
+	log.Debug("2...")
 
-	file, err := os.OpenFile(f, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0744)
+	file, err := os.Create(f)
+	file.Chmod(0755)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-
-	log.Debug("2...")
-
-	err = os.Chmod(f, 0766)
-	if err != nil {
-		return err
-	}
 
 	WriteScript(f, "#!/bin/bash \nset -x\n")
 

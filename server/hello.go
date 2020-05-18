@@ -56,7 +56,13 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	extime = strconv.FormatInt(exectime, 10)
 
-	exws = strconv.Itoa(rand.Intn(c.Workers))
+	randws := rand.Intn(c.Workers)
+
+	if randws == 0 {
+		randws = 1
+	}
+
+	exws = strconv.Itoa(randws)
 
 	expwd = fmt.Sprintf("PWD=%s_%s", c.WorkspaceDir, exws)
 
@@ -66,6 +72,8 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d/" + extime + ".qscript"
 
+	log.Debug("What: " + exscript)
+
 	err = CreateScript(exscript)
 	if err != nil {
 		log.Error("Could not create script file: %s", err)
@@ -73,14 +81,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.Chmod(exscript, 0766)
-	if err != nil {
-		log.Error("Could not chmod script file: %s", err)
-	}
-
-	for _, cmd := range newJob.Commands {
-		WriteScript(exscript, cmd+"\n")
-	}
+	WriteScript("./worker_1/job-scripts.d/asdf.qscript", "echo 1\n")
 
 	execq := exec.Command("nqe", "-p", extime, exscript)
 

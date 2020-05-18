@@ -25,6 +25,7 @@ conveyor
 workspace_*/
 workspace
 workspace_*
+worker*
 
 # Exclude timestamp files.
 ,*

@@ -18,6 +18,7 @@ clean:
 	@echo "Cleaning..."
 	@rm -rf ./,*
 	@rm -rf workspace*
+	@rm -rf worker*
 	@rm -f ./conveyor
 	@rm -rf ./conveyor-*
 	@rm -rf ./*.tar.gz
