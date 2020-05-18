@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"strconv"
 	"time"
-
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 )
@@ -33,7 +32,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Error("Something went wrong with parsing the json request: %s", err)
+		log.Error("Something went wrong with parsing the json request: ", err)
 		respondError(w, http.StatusBadRequest, "Could not parse json.")
 		return
 	}
@@ -64,38 +63,14 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exws = strconv.Itoa(randws)
 
-	expwd = fmt.Sprintf("PWD=%s_%s", c.WorkspaceDir, exws)
-
-	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
-
-	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d/" + extime + ".qscript"
-
-	log.Debug("What: " + exscript)
-
-	file, err := os.OpenFile(exscript, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	byteSlice := []byte("Bytes!\n")
-	_, err = file.Write(byteSlice)
-	if err != nil {
-		log.Fatal(err)
-	}
+	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d" + "/" + extime + ".qscript"
+	
+	qscript := ("#!/bin/bash\nset +x\n")
+	AppendToFile(exscript, qscript)
 
 	for _, cmd := range newJob.Commands {
-		byteSlice = []byte(cmd)
-		_, err = file.Write(byteSlice)
-		if err != nil {
-			log.Error("Could not write to script file: %s", err)
-			respondError(w, http.StatusInternalServerError, "Could not submit job.")
-			return
-		}
-	}
-
-	if err := os.Chmod(exscript, 0777); err != nil {
-		log.Fatal(err)
+		qscript = cmd
+		AppendToFile(exscript, qscript + "\n")
 	}
 
 	execq := exec.Command("nqe", "-p", extime, exscript)
@@ -106,7 +81,7 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	err = execq.Start()
 	if err != nil {
-		log.Error("Something went wrong with running nq: %s", err)
+		log.Error("Something went wrong with running nq: ", err)
 		respondError(w, http.StatusInternalServerError, "Something went wrong with queue worker.")
 		return
 	}

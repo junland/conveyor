@@ -17,7 +17,6 @@ type Config struct {
 	LogLvl       string
 	Access       bool
 	Port         string
-	PID          string
 	TLS          bool
 	Cert         string
 	Key          string
@@ -55,13 +54,13 @@ func Start(c Config) error {
 		ws := strconv.Itoa(w)
 		if _, err := os.Stat(c.WorkersDir + "_" + ws); os.IsNotExist(err) {
 			log.Info("Worker directory does not exist. Creating...")
-			os.Mkdir(c.WorkersDir+"_"+ws, 0700)
+			os.MkdirAll(c.WorkersDir+"_"+ws, 0700)
 			log.Debug("Created " + c.WorkersDir + "_" + ws)
 		}
 
 		if _, err := os.Stat(c.WorkersDir + "_" + ws + "/job-scripts.d"); os.IsNotExist(err) {
 			log.Info("Worker scripts directory does not exist. Creating...")
-			os.Mkdir(c.WorkersDir+"_"+ws+"/job-scripts.d", 0700)
+			os.MkdirAll(c.WorkersDir+"_"+ws+"/job-scripts.d", 0700)
 			log.Debug("Created " + c.WorkersDir + "_" + ws + "/job-scripts.d")
 		}
 		w = w + 1
@@ -99,8 +98,6 @@ func Start(c Config) error {
 		}
 	}()
 
-	p := CreatePID(c.PID)
-
 	signal.Notify(stop, os.Interrupt)
 
 	log.Info("Serving on port " + c.Port + ", press CTRL + C to shutdown.")
@@ -108,8 +105,6 @@ func Start(c Config) error {
 	<-stop // wait for SIGINT
 
 	log.Warn("Shutting down server...")
-
-	p.RemovePID()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second) // shut down gracefully, but wait no longer than 45 seconds before halting.
 

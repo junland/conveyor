@@ -18,7 +18,6 @@ const (
 	defLvl          = "info"
 	defAccess       = true
 	defPort         = "8080"
-	defPID          = "/var/run/conveyor.pid"
 	defTLS          = false
 	defCert         = ""
 	defKey          = ""
@@ -28,9 +27,9 @@ const (
 )
 
 var (
-	confLogLvl, confPort, confPID, confCert, confKey, confWorkersDir, confWorkspaceDir string
-	enableTLS, enableAccess, version, help                                             bool
-	confWorkers                                                                        int
+	confLogLvl, confPort, confCert, confKey, confWorkersDir, confWorkspaceDir string
+	enableTLS, enableAccess, version, help                                    bool
+	confWorkers                                                               int
 )
 
 // init defines configuration flags and environment variables.
@@ -39,7 +38,6 @@ func init() {
 	flags.StringVar(&confLogLvl, "log-level", GetEnvString("CONVEYOR_LOG_LEVEL", defLvl), "Specify log level for output.")
 	flags.BoolVar(&enableAccess, "access-log", GetEnvBool("CONVEYOR_ACCESS_LOG", defAccess), "Specify weather to run with or without HTTP access logs.")
 	flags.StringVar(&confPort, "port", GetEnvString("CONVEYOR_SERVER_PORT", defPort), "Starting server port.")
-	flags.StringVar(&confPID, "pid-file", GetEnvString("CONVEYOR_SERVER_PID", defPID), "Specify server PID file path.")
 	flags.BoolVar(&enableTLS, "tls", GetEnvBool("CONVEYOR_TLS", defTLS), "Specify weather to run server in secure mode.")
 	flags.StringVar(&confCert, "tls-cert", GetEnvString("CONVEYOR_TLS_CERT", defCert), "Specify TLS certificate file path.")
 	flags.StringVar(&confKey, "tls-key", GetEnvString("CONVEYOR_TLS_KEY", defKey), "Specify TLS key file path.")
@@ -77,7 +75,6 @@ func Run() {
 		LogLvl:       confLogLvl,
 		Access:       enableAccess,
 		Port:         confPort,
-		PID:          confPID,
 		TLS:          enableTLS,
 		Cert:         confCert,
 		Key:          confKey,
