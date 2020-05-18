@@ -68,20 +68,35 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
 
-	log.Debug("NQDIR: " + exnqdir)
-
 	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d/" + extime + ".qscript"
 
 	log.Debug("What: " + exscript)
 
-	err = CreateScript(exscript)
+	file, err := os.OpenFile(exscript, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
 	if err != nil {
-		log.Error("Could not create script file: %s", err)
-		respondError(w, http.StatusInternalServerError, "Could not submit job.")
-		return
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	byteSlice := []byte("Bytes!\n")
+	_, err = file.Write(byteSlice)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	WriteScript("./worker_1/job-scripts.d/asdf.qscript", "echo 1\n")
+	for _, cmd := range newJob.Commands {
+		byteSlice = []byte(cmd)
+		_, err = file.Write(byteSlice)
+		if err != nil {
+			log.Error("Could not write to script file: %s", err)
+			respondError(w, http.StatusInternalServerError, "Could not submit job.")
+			return
+		}
+	}
+
+	if err := os.Chmod(exscript, 0777); err != nil {
+		log.Fatal(err)
+	}
 
 	execq := exec.Command("nqe", "-p", extime, exscript)
 

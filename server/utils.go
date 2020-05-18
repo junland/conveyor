@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"syscall"
-	"bufio"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -77,47 +76,6 @@ func (pf *Pidfile) RemovePID() {
 		log.Error("pidfile: failed to remove ", err)
 	}
 	log.Debug("PID file removed...")
-}
-
-func WriteScript(f string, i string) error {
-
-	script, err := os.OpenFile(f, os.O_APPEND, 0766)
-	if err != nil {
-		return err
-	}
-	writer := bufio.NewWriter(script)
-	defer script.Close()
-
-	fmt.Fprintln(writer, i)
-	
-
-	writer.Flush()
-
-	err = script.Chmod(0777)
-	if err != nil {
-		return err
-	}
-
-	log.Debug("Script wrote: " + i)
-
-	return nil
-}
-
-func CreateScript(f string) error {
-	log.Debug("2...")
-
-	file, err := os.Create(f)
-	file.Chmod(0755)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	WriteScript(f, "#!/bin/bash \nset -x\n")
-
-	log.Debug("script file created...")
-
-	return nil
 }
 
 // respondJSON makes the response with payload as json format
