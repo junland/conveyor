@@ -85,13 +85,14 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 	log.Info("Queueing up job for worker " + exws)
 
 	err = execq.Start()
+	respondJSON(w, http.StatusOK, map[string]string{"message": "Job Submitted"})
 	if err != nil {
 		log.Error("Something went wrong with running nq: ", err)
-		respondError(w, http.StatusInternalServerError, "Something went wrong with queue worker.")
+		RemoveDirContents(c.WorkspaceDir + "_" + exws)
 		return
 	}
 
-	respondJSON(w, http.StatusOK, map[string]string{"message": "Job Submitted"})
+	RemoveDirContents(c.WorkspaceDir + "_" + exws)
 
 	return
 }

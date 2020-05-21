@@ -9,9 +9,10 @@ APP_NAME ?= conveyor
 CGO_ENABLED := 0 
 APP_NAME_UPPER := `echo $(APP_NAME) | tr '[:lower:]' '[:upper:]'`
 
-.PHONY: list
-list:
-	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs
+.PHONY: binary
+binary: clean fmt
+	@echo "Building binary for commit $(GIT_COMMIT)"
+	go build 
 
 .PHONY: clean
 clean:
@@ -36,8 +37,3 @@ fmt:
 test:
 	@echo "Running tests..."
 	go test ./...
-
-.PHONY: clean
-binary: clean
-	@echo "Building binary for commit $(GIT_COMMIT)"
-	go build 
