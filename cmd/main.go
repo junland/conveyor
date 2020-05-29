@@ -61,7 +61,7 @@ func init() {
 func PrintHelp() {
 	fmt.Printf("Usage: conveyor [options] <command> [<args>]\n")
 	fmt.Printf("\n")
-	fmt.Printf("Unix like CI runner.\n")
+	fmt.Printf("Unix-like CI runner.\n")
 	fmt.Printf("\n")
 	fmt.Printf("Options:\n")
 	flag.PrintDefaults()
