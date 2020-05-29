@@ -3,15 +3,14 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"os"
-	"os/exec"
-	"strconv"
 	"time"
+
+	"github.com/julienschmidt/httprouter"
+	"github.com/junland/conveyor/queue"
+	log "github.com/sirupsen/logrus"
 )
 
 // JobRequest describes the statement of work.
@@ -47,52 +46,21 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var exws, exwd, exnqdir, exscript, extime string
-
 	exectime := time.Now().UnixNano() / 1e6
 
 	rand.Seed(exectime)
 
-	extime = strconv.FormatInt(exectime, 10)
+	log.Info("Queueing up job")
 
-	randws := rand.Intn(c.Workers)
+	work := queue.Job{ID: uint64(exectime), CmdList: newJob.Commands}
 
-	if randws == 0 {
-		randws = 1
-	}
+	queue.JobQueue <- work
 
-	exws = strconv.Itoa(randws)
-
-	exwd = fmt.Sprintf("cd %s_%s", c.WorkspaceDir, exws)
-
-	exnqdir = fmt.Sprintf("NQDIR=%s_%s", c.WorkersDir, exws)
-
-	exscript = c.WorkersDir + "_" + exws + "/job-scripts.d" + "/" + extime + ".nqescript"
-
-	qscript := "#!/bin/bash\nset +x\n\n" + exwd + "\n\n"
-
-	AppendToFile(exscript, qscript)
-
-	for _, cmd := range newJob.Commands {
-		qscript = cmd
-		AppendToFile(exscript, qscript+"\n")
-	}
-
-	execq := exec.Command("nqe", "-p", extime, exscript)
-
-	execq.Env = append(os.Environ(), exnqdir)
-
-	log.Info("Queueing up job for worker " + exws)
-
-	err = execq.Start()
 	respondJSON(w, http.StatusOK, map[string]string{"message": "Job Submitted"})
 	if err != nil {
-		log.Error("Something went wrong with running nq: ", err)
-		RemoveDirContents(c.WorkspaceDir + "_" + exws)
+		log.Error("Something went wrong with submitting work to queue: ", err)
 		return
 	}
-
-	RemoveDirContents(c.WorkspaceDir + "_" + exws)
 
 	return
 }

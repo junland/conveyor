@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/junland/conveyor/queue"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,6 +25,7 @@ type Config struct {
 	WorkspaceDir string
 	Workers      int
 	WorkersDir   string
+	Dispatcher   *queue.Dispatcher
 }
 
 var stop = make(chan os.Signal)
@@ -49,6 +52,7 @@ func Start(c Config) error {
 
 	var w int
 
+	// Create worker history and scripts dir.
 	w = 1
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
@@ -66,6 +70,7 @@ func Start(c Config) error {
 		w = w + 1
 	}
 
+	// Create worker workspaces.
 	w = 1
 	for w <= c.Workers {
 		ws := strconv.Itoa(w)
@@ -76,6 +81,16 @@ func Start(c Config) error {
 		}
 		w = w + 1
 	}
+
+	log.Info("Setting up queue engine...")
+
+	workQ := make(chan queue.Job, 500)
+
+	queue := queue.NewDispatcher(workQ, c.Workers, c.WorkersDir, c.WorkspaceDir)
+
+	queue.Start()
+
+	c.Dispatcher = queue
 
 	router := c.RegisterRoutes()
 
