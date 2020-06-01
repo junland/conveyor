@@ -1,13 +1,11 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
-	"time"
 
 	"github.com/junland/conveyor/queue"
 
@@ -22,10 +20,11 @@ type Config struct {
 	TLS          bool
 	Cert         string
 	Key          string
-	WorkspaceDir string
 	Workers      int
 	WorkersDir   string
-	Dispatcher   *queue.Dispatcher
+	WorkspaceDir string
+	JobDir       string
+	WorkerPool   *queue.WorkerPool
 }
 
 var stop = make(chan os.Signal)
@@ -50,6 +49,12 @@ func Start(c Config) error {
 
 	log.Info("Setting up server...")
 
+	if _, err := os.Stat(c.JobDir); os.IsNotExist(err) {
+		log.Info("Jobs directory does not exist. Creating...")
+		os.MkdirAll(c.JobDir, 0600)
+		log.Debug("Created " + c.JobDir)
+	}
+
 	var w int
 
 	// Create worker history and scripts dir.
@@ -61,13 +66,6 @@ func Start(c Config) error {
 			os.MkdirAll(c.WorkersDir+"_"+ws, 0700)
 			log.Debug("Created " + c.WorkersDir + "_" + ws)
 		}
-
-		if _, err := os.Stat(c.WorkersDir + "_" + ws + "/job-scripts.d"); os.IsNotExist(err) {
-			log.Info("Worker scripts directory does not exist. Creating...")
-			os.MkdirAll(c.WorkersDir+"_"+ws+"/job-scripts.d", 0700)
-			log.Debug("Created " + c.WorkersDir + "_" + ws + "/job-scripts.d")
-		}
-		w = w + 1
 	}
 
 	// Create worker workspaces.
@@ -84,13 +82,11 @@ func Start(c Config) error {
 
 	log.Info("Setting up queue engine...")
 
-	workQ := make(chan queue.Job, 500)
+	signal.Notify(stop, os.Interrupt)
 
-	queue := queue.NewDispatcher(workQ, c.Workers, c.WorkersDir, c.WorkspaceDir)
+	workerpool := queue.NewWorkerPool(c.Workers)
 
-	queue.Start()
-
-	c.Dispatcher = queue
+	poolStatusChan, poolStatusForcedChan := workerpool.Start(c.WorkersDir, c.WorkspaceDir)
 
 	router := c.RegisterRoutes()
 
@@ -113,20 +109,29 @@ func Start(c Config) error {
 		}
 	}()
 
-	signal.Notify(stop, os.Interrupt)
-
 	log.Info("Serving on port " + c.Port + ", press CTRL + C to shutdown.")
 
-	<-stop // wait for SIGINT
+	select {
+	case sig := <-stop:
+		log.Printf("Caught signal %+v, gracefully stopping worker pool", sig)
 
-	log.Warn("Shutting down server...")
+		go func() {
+			workerpool.Stop()
+		}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second) // shut down gracefully, but wait no longer than 45 seconds before halting.
+		select {
+		case sig := <-stop:
+			log.Warnf("Caught signal %+v, forcing pool shutdown", sig)
+			workerpool.ForceStop()
 
-	defer cancel()
+		case <-poolStatusChan:
+			log.Warnf("Pool has been gracefully terminated")
+			return nil
 
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal(err)
+		case <-poolStatusForcedChan:
+			log.Warnf("Pool has been forcefully terminated")
+			return nil
+		}
 	}
 
 	return nil

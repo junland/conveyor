@@ -26,6 +26,7 @@ clean:
 	@rm -rf ./conveyor_*
 	@rm -rf ./*.txt
 	@rm -rf ./*.pem
+	@rm -rf ./jobs.d
 	@echo "Done cleaning..."
 
 .PHONY: fmt

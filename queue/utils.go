@@ -4,9 +4,27 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
+
+func GenQScript(i uint64, d string, c []string) string {
+
+	exscript := d + "/" + strconv.FormatUint(i, 10) + ".qscript"
+
+	qscript := "#!/bin/bash\nset +x\n\n"
+
+	AppendToFile(exscript, qscript)
+
+	for _, cmd := range c {
+		AppendToFile(exscript, cmd+"\n")
+	}
+
+	log.Info("Created qscript.")
+
+	return exscript
+}
 
 func AppendToFile(name string, data string) {
 	file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0744)

@@ -1,46 +1,57 @@
 package queue
 
-type WorkStatus int
+import (
+	"sync"
 
-const (
-	// Idle means work is not yet started.
-	Idle WorkStatus = iota
-	// Running means work is running.
-	Running
-	// Success means work over done without any errors. (Hopefully)
-	Success
-	// Error means work is finished but caught some errors. (Yikes)
-	Error
+	"github.com/go-cmd/cmd"
 )
 
-type Dispatcher struct {
-	MaxWorkers   int
-	WorkersDir   string
-	WorkspaceDir string
-	Work         map[uint64]*Job
-	workerPoolCh chan chan *Worker
-	workQueueCh  chan Job
+var workerPool WorkerPool
+
+type WorkerPool struct {
+	NumWorkers int
+	jobCounter uint64
+
+	terminationFlag  uint64
+	statusChan       chan struct{}
+	statusForcedChan chan struct{}
+
+	jobChan         chan *Job
+	cancelChan      chan struct{}
+	forceCancelChan chan struct{}
+	workersWg       sync.WaitGroup
+
+	jobs map[uint64]*Job
 }
 
-// Worker struct
 type Worker struct {
 	ID           int
 	WorkersDir   string
 	WorkspaceDir string
-
-	workCh  chan Job
-	queueCh chan chan Job
-	quitCh  chan bool
+	pool         *WorkerPool
 }
 
-// Job struct is a request of work for a worker
 type Job struct {
-	ID      uint64
-	Script  string
-	CmdList []string
-	Status  WorkStatus
-	LogFile string
-	Err     error
+	ID            uint64
+	CmdStatus     cmd.Status
+	StdoutChan    chan *cmd.Status
+	InterruptChan chan struct{}
+	worker        *Worker
+	cmd           *cmd.Cmd
+}
 
-	quitCh chan bool
+type JobCmd struct {
+	JobId uint64
+	Name  string
+	Args  []string
+	Env   []string
+	Dir   string
+}
+
+type JobScriptCmd struct {
+	JobId     uint64
+	Script    string
+	ScriptDir string
+	Cmds      []string
+	Args      []string
 }

@@ -26,12 +26,13 @@ const (
 	defWorkers      = 2
 	defWorkersDir   = "/worker"
 	defWorkspaceDir = "/workspace"
+	defJobDir       = "/jobs.d"
 )
 
 var (
-	confLogLvl, confPort, confCert, confKey, confWorkersDir, confWorkspaceDir string
-	enableTLS, enableAccess, version, help                                    bool
-	confWorkers                                                               int
+	confLogLvl, confPort, confCert, confKey, confWorkersDir, confWorkspaceDir, confJobDir string
+	enableTLS, enableAccess, version, help                                                bool
+	confWorkers                                                                           int
 )
 
 // init defines configuration flags and environment variables.
@@ -48,9 +49,10 @@ func init() {
 	flags.BoolVar(&enableTLS, "tls", GetEnvBool("CONVEYOR_TLS", defTLS), "Specify weather to run server in secure mode.")
 	flags.StringVar(&confCert, "tls-cert", GetEnvString("CONVEYOR_TLS_CERT", defCert), "Specify TLS certificate file path.")
 	flags.StringVar(&confKey, "tls-key", GetEnvString("CONVEYOR_TLS_KEY", defKey), "Specify TLS key file path.")
-	flags.StringVar(&confWorkspaceDir, "workspace-dir", GetEnvString("CONVEYOR_WORKSPACE_DIR", cwd+defWorkspaceDir), "Specify the working directory for builds.")
 	flags.IntVar(&confWorkers, "workers", GetEnvInt("CONVEYOR_WORKERS", defWorkers), "Specify amount of executors to process requests.")
+	flags.StringVar(&confWorkspaceDir, "workspace-dir", GetEnvString("CONVEYOR_WORKSPACE_DIR", cwd+defWorkspaceDir), "Specify the working directory for builds.")
 	flags.StringVar(&confWorkersDir, "workers-dir", GetEnvString("CONVEYOR_WORKERS_DIR", cwd+defWorkersDir), "Specify the working directory for builds.")
+	flags.StringVar(&confJobDir, "job-dir", GetEnvString("CONVEYOR_JOB_DIR", cwd+defJobDir), "Specify the working directory for builds.")
 	flags.BoolVarP(&help, "help", "h", false, "Show this help")
 	flags.BoolVar(&version, "version", false, "Display version information")
 	flags.SortFlags = false
@@ -86,9 +88,10 @@ func Run() {
 		TLS:          enableTLS,
 		Cert:         confCert,
 		Key:          confKey,
-		WorkspaceDir: confWorkspaceDir,
 		Workers:      confWorkers,
+		WorkspaceDir: confWorkspaceDir,
 		WorkersDir:   confWorkersDir,
+		JobDir:       confJobDir,
 	}
 
 	if version {

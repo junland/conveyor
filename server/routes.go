@@ -25,6 +25,7 @@ func (config *Config) RegisterRoutes() *httprouter.Router {
 	router.Handler("GET", "/hello/:name", chain.ThenFunc(helloNameHandle))
 
 	router.Handler("POST", "/job", chain.ThenFunc(config.CreateJob))
+	router.Handler("POST", "/job/:id", chain.ThenFunc(config.StopJob))
 
 	return router
 }

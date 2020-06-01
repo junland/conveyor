@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -52,13 +53,46 @@ func (c *Config) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("Queueing up job")
 
-	work := queue.Job{ID: uint64(exectime), CmdList: newJob.Commands}
+	//queue.GenQScript(uint64(exectime), c.WorkerPool, newJob.Commands)
 
-	queue.JobQueue <- work
+	c.WorkerPool.RunScript(queue.JobScriptCmd{
+		JobId:     uint64(exectime),
+		Cmds:      newJob.Commands,
+		ScriptDir: c.JobDir,
+	})
 
 	respondJSON(w, http.StatusOK, map[string]string{"message": "Job Submitted"})
 	if err != nil {
 		log.Error("Something went wrong with submitting work to queue: ", err)
+		return
+	}
+
+	return
+}
+
+// StopJob function will stop the specified job.
+func (c *Config) StopJob(w http.ResponseWriter, r *http.Request) {
+	ps := httprouter.ParamsFromContext(r.Context())
+
+	// Make sure we can only be called with an HTTP POST request.
+	if r.Method != "POST" {
+		w.Header().Set("Allow", "POST")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	i, err := strconv.ParseUint(ps.ByName("id"), 10, 64)
+	if err != nil {
+		log.Error("Something went wrong with converting the string: ", err)
+		respondError(w, http.StatusInternalServerError, "Something went wrong.")
+		return
+	}
+
+	c.WorkerPool.StopJob(i)
+
+	respondJSON(w, http.StatusOK, map[string]string{"message": "Issueing stop to job."})
+	if err != nil {
+		log.Error("Something went wrong with submitting stop command: ", err)
 		return
 	}
 
